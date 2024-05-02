@@ -1,6 +1,9 @@
 'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { UserSettings } from '@prisma/client';
+import { toast } from 'sonner';
+
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,12 +22,8 @@ import {
 } from '@/components/ui/popover';
 import { Currencies, Currency } from '@/lib/currencies';
 import useGetUserSetting from '@/hooks/useGetUserSetting';
-import { toast } from 'sonner';
 import SkeletonWrapper from './skeleton-wrapper';
-import useUpdateUserSettings from '@/hooks/useUpdateUserSetting';
-import { useMutation } from '@tanstack/react-query';
 import { UpdateUserCurrency } from '@/app/(dashboard)/set-currency/_actions/userSettings';
-import { UserSettings } from '@prisma/client';
 
 export function CurrencyComboBox() {
   const [open, setOpen] = useState(false);
