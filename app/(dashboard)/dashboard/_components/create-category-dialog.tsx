@@ -7,6 +7,7 @@ import { CircleOff, Loader2, PlusSquare } from 'lucide-react';
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -39,9 +40,9 @@ import {
   CreateCategorySchemaType,
 } from '@/schema/categories';
 import type { TransactionType } from '@/types/types';
+import usePostCategory from '@/hooks/usePostCategory';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CreateCategory } from '../_actions/categories';
-import { toast } from 'sonner';
 
 interface Props {
   type: TransactionType;
@@ -58,31 +59,34 @@ const CreateCategoryDialog = ({ type, successCallback, trigger }: Props) => {
       type,
     },
   });
-
   const queryClient = useQueryClient();
   const theme = useTheme();
+
+  //   const { mutate, isPending, isError, error } = usePostCategory();
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationKey: ['categories'],
     mutationFn: CreateCategory,
+    onError: () => {
+      toast.error('Something went wrong', {
+        id: 'create-category',
+      });
+    },
     onSuccess: async (data: Category) => {
       form.reset({
         name: '',
         icon: '',
         type,
       });
-      toast.success(`Category${data.name} created successfully 🎉`, {
+      toast.success(`Category ${data.name} created successfully 🎉`, {
         id: 'create-category',
       });
+      successCallback(data);
+
       await queryClient.invalidateQueries({
         queryKey: ['categories'],
       });
       setOpen((prev) => !prev);
-    },
-    onError: () => {
-      toast.error('Something went wrong', {
-        id: 'create-category',
-      });
     },
   });
 
@@ -92,12 +96,19 @@ const CreateCategoryDialog = ({ type, successCallback, trigger }: Props) => {
         id: 'create-category',
       });
       mutate(values);
+      mutate(values);
+      form.reset({
+        name: '',
+        icon: '',
+        type,
+      });
+      setOpen((prev) => !prev);
     },
-    [mutate]
+    [mutate, type, form]
   );
 
   if (isError) {
-    toast.error(error.message);
+    toast.error(error?.message);
   }
 
   return (

@@ -1,29 +1,23 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { UserSettings } from '@prisma/client';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { toast } from 'sonner';
-import { TransactionType } from '@/types/types';
+import { Category } from '@prisma/client';
 
-interface Props {
-  type: TransactionType;
-}
+import type { TransactionType } from '@/types/types';
 
-const useGetCategories = ({ type }: Props) => {
-  return useQuery<UserSettings>({
+const useGetCategories = (type: TransactionType) => {
+  const categoriesQuery = useQuery<Category[]>({
     queryKey: ['categories', type],
     queryFn: async () => {
       try {
-        const { data } = await axios.get(`/api/categories?type=${type}`);
-        return data;
-      } catch (error: any) {
-        toast.error(error.response.data.message);
+        const response = await axios.get(`/api/categories?type=${type}`);
+        return response.data;
+      } catch (error) {
+        throw new Error('Failed to fetch categories');
       }
     },
-    staleTime: 1000 * 60 * 60,
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData,
-    retry: 2,
   });
+
+  return categoriesQuery;
 };
 
 export default useGetCategories;
